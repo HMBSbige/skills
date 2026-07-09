@@ -15,8 +15,6 @@ When launching subagents, keep candidates independent until verification and do 
 
 For user-facing replies, report concise Markdown findings. If the host provides a native review-reporting surface, use it only when the active environment explicitly requires it. Use raw JSON only when explicitly requested or required by an integration.
 
-Remote writes require explicit user approval first, including `git push`, PR creation, PR/issue comments, inline review comments, and closing PRs/issues.
-
 ## When To Use
 
 Use for reviewing current diffs, branches, PRs, ref ranges, paths, or scoped review instructions such as "only review src/foo.ts" or "focus on error handling".
