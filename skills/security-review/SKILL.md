@@ -3,31 +3,29 @@ name: security-review
 description: Complete a security review of the pending changes on the current branch
 ---
 
-# Security Review
-
-Before reviewing, collect the review context:
-
-- `git status`
-- modified files from the review range
-- commits from the review range
-- complete diff from the review range
-
-Use the user's requested base/ref when provided. Otherwise prefer the current branch's upstream range if available, then `origin/HEAD...` as a fallback. Include unstaged and staged local changes when the user asks to review pending local changes.
-
-Use subagents or parallel agents when available; do not set explicit thinking budgets on subagents, and let them inherit the current session's thinking budget:
-
-1. Run one vulnerability-finding pass over the repository context and diff.
-2. For each candidate vulnerability, run an independent false-positive filtering pass in parallel when possible.
-3. Filter out any vulnerabilities where the independent pass reported a confidence less than 8.
-
-If subagents are unavailable, perform the same finder and verification phases in the main context, keeping the phases mentally separate. Do not perform remote writes, post PR comments, or change files as part of the review unless the user explicitly asks.
-
 You are a senior security engineer conducting a focused security review of the changes on this branch.
 
-Review the complete diff. This contains all code changes in the review range.
+GIT STATUS:
+
+Run `git status`.
+
+FILES MODIFIED:
+
+Run `git diff --name-only origin/HEAD...`.
+
+COMMITS:
+
+Run `git log --no-decorate origin/HEAD...`.
+
+DIFF CONTENT:
+
+Run `git diff origin/HEAD...`.
+
+Review the complete diff above. This contains all code changes in the PR.
+
 
 OBJECTIVE:
-Perform a security-focused code review to identify HIGH-CONFIDENCE security vulnerabilities that could have real exploitation potential. This is not a general code review - focus ONLY on security implications newly added by this change. Do not comment on existing security concerns.
+Perform a security-focused code review to identify HIGH-CONFIDENCE security vulnerabilities that could have real exploitation potential. This is not a general code review - focus ONLY on security implications newly added by this PR. Do not comment on existing security concerns.
 
 CRITICAL INSTRUCTIONS:
 1. MINIMIZE FALSE POSITIVES: Only flag issues where you're >80% confident of actual exploitability
@@ -123,11 +121,11 @@ CONFIDENCE SCORING:
 - Below 0.7: Don't report (too speculative)
 
 FINAL REMINDER:
-Focus on HIGH and MEDIUM findings only. Better to miss some theoretical issues than flood the report with false positives. Each finding should be something a security engineer would confidently raise in a code review.
+Focus on HIGH and MEDIUM findings only. Better to miss some theoretical issues than flood the report with false positives. Each finding should be something a security engineer would confidently raise in a PR review.
 
 FALSE POSITIVE FILTERING:
 
-> You do not need to run commands to reproduce the vulnerability, just read the code to determine if it is a real vulnerability. Do not use shell commands or write to any files during false-positive filtering.
+> You do not need to run commands to reproduce the vulnerability, just read the code to determine if it is a real vulnerability. Do not execute commands or write to any files.
 >
 > HARD EXCLUSIONS - Automatically exclude findings matching these patterns:
 > 1. Denial of Service (DOS) vulnerabilities or resource exhaustion attacks.
@@ -178,8 +176,10 @@ START ANALYSIS:
 
 Begin your analysis now. Do this in 3 steps:
 
-1. Use a subagent or independent finder pass to identify vulnerabilities. Use the repository exploration tools to understand the codebase context, then analyze the review changes for security implications. In the prompt or working notes for this pass, include all of the above.
-2. Then for each vulnerability identified by the above finder pass, create an independent filtering pass to filter out false-positives. Launch these passes in parallel when possible. In the prompt or working notes for these passes, include everything in the "FALSE POSITIVE FILTERING" instructions.
-3. Filter out any vulnerabilities where the filtering pass reported a confidence less than 8.
+The finder and false-positive filtering subagents must directly inherit the current session's thinking budget; do not assign them a separate budget.
+
+1. Use a subagent to identify vulnerabilities. Use the repository exploration tools to understand the codebase context, then analyze the PR changes for security implications. In the prompt for this subagent, include all of the above.
+2. Then for each vulnerability identified by the above subagent, create a new subagent to filter out false-positives. Launch these subagents as parallel subagents. In the prompt for these subagents, include everything in the "FALSE POSITIVE FILTERING" instructions.
+3. Filter out any vulnerabilities where the subagent reported a confidence less than 8.
 
 Your final reply must contain the markdown report and nothing else.

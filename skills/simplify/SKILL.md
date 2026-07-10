@@ -1,8 +1,9 @@
 ---
 name: simplify
-description: Review the changed code for reuse, simplification, efficiency, and altitude cleanups, then apply the fixes. Quality only — it does not hunt for bugs; use code-review for that.
+description: Use when changed code needs reuse, simplification, efficiency, or altitude cleanup rather than correctness-bug review.
 ---
-`simplify → 4 cleanup agents in parallel → apply the fixes`
+
+`simplify → 4 cleanup subagents in parallel → apply the fixes`
 
 You are improving the quality of the changed code, not hunting for bugs. Review it for reuse, simplification, efficiency, and altitude issues, then fix what you find. Do not look for correctness bugs — that is what `code-review` is for.
 
@@ -10,9 +11,9 @@ You are improving the quality of the changed code, not hunting for bugs. Review 
 
 Run `git diff @{upstream}...HEAD` (or `git diff main...HEAD` / `git diff HEAD~1` if there's no upstream) to get the unified diff under review. If there are uncommitted changes, or the range diff is empty, also run `git diff HEAD` and include the working-tree changes in scope — the review often runs before the commit. If a PR number, branch name, or file path was passed as an argument, review that target instead. Treat this diff as the review scope.
 
-## Phase 1 — Review (4 cleanup agents in parallel)
+## Phase 1 — Review (4 cleanup subagents in parallel)
 
-Launch **4 independent review agents** through the host's subagent mechanism, without setting explicit thinking budgets so they inherit the current session's thinking budget, all in a single message so they run concurrently. Pass each agent the diff and one of the four angles below. Each returns its findings with `file`, `line`, a one-line `summary`, and the concrete cost (what is duplicated, wasted, or harder to maintain).
+Launch **4 independent review subagents** through the available subagent mechanism, without setting explicit thinking budgets so they inherit the current session's thinking budget, all in a single message so they run concurrently. Pass each subagent the diff and one of the four angles below. Each returns its findings with `file`, `line`, a one-line `summary`, and the concrete cost (what is duplicated, wasted, or harder to maintain).
 
 ### Reuse
 
@@ -32,4 +33,4 @@ Check that each change is implemented at the right depth, not as a fragile banda
 
 ## Phase 2 — Apply the fixes
 
-Wait for all four agents to complete, dedup findings that point at the same line or mechanism, and fix each remaining one directly. Skip any finding whose fix would change intended behavior, require changes well outside the reviewed diff, or that you judge to be a false positive — note the skip rather than arguing with it. Finish with a brief summary of what was fixed and what was skipped (or confirm the code was already clean).
+Wait for all four subagents to complete, dedup findings that point at the same line or mechanism, and fix each remaining one directly. Skip any finding whose fix would change intended behavior, require changes well outside the reviewed diff, or that you judge to be a false positive — note the skip rather than arguing with it. Finish with a brief summary of what was fixed and what was skipped (or confirm the code was already clean).
