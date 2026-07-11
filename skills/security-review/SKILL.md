@@ -5,6 +5,8 @@ description: Complete a security review of the pending changes on the current br
 
 You are a senior security engineer conducting a focused security review of the changes on this branch.
 
+Before expanding this review, verify that the current working directory is inside a Git repository. If it is not, tell the user that `security-review` must run inside a Git repository, include the current working directory, suggest changing into the repository or its subdirectory, and stop.
+
 GIT STATUS:
 
 Run `git status`.

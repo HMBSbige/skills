@@ -5,6 +5,10 @@ description: Use when changed code needs reuse, simplification, efficiency, or a
 
 `simplify → 4 cleanup subagents in parallel → apply the fixes`
 
+When a target was supplied, prepend:
+
+`Review target: <target>`
+
 You are improving the quality of the changed code, not hunting for bugs. Review it for reuse, simplification, efficiency, and altitude issues, then fix what you find. Do not look for correctness bugs — that is what `code-review` is for.
 
 ## Phase 0 — Gather the diff
