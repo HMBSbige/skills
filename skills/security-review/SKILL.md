@@ -178,8 +178,6 @@ START ANALYSIS:
 
 Begin your analysis now. Do this in 3 steps:
 
-The finder and false-positive filtering subagents must directly inherit the current session's thinking budget; do not assign them a separate budget.
-
 1. Use a subagent to identify vulnerabilities. Use the repository exploration tools to understand the codebase context, then analyze the PR changes for security implications. In the prompt for this subagent, include all of the above.
 2. Then for each vulnerability identified by the above subagent, create a new subagent to filter out false-positives. Launch these subagents as parallel subagents. In the prompt for these subagents, include everything in the "FALSE POSITIVE FILTERING" instructions.
 3. Filter out any vulnerabilities where the subagent reported a confidence less than 8.

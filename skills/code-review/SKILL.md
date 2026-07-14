@@ -13,9 +13,9 @@ Remove exact `--comment` and `--fix` flags wherever they occur. Trim and lowerca
 
 If the first remaining word consists only of letters, begins with `low`, `med`, `hig`, `xhi`, or `max`, and is not a recognized level, print:
 
-`(Ignoring unrecognized effort "<word>"; valid: low, medium, high, xhigh, max. Using max.)`
+`(Ignoring unrecognized effort "<word>"; valid: low, medium, high, xhigh, max.)`
 
-Then keep the complete remaining text as the target and use `max`. With no explicit level, use `max` and the highest reasoning effort available in the current session.
+Then keep the complete remaining text as the target and use the current session's effort level. With no explicit level, use the current session's effort; if it is unavailable, use `medium`.
 
 Use the `low` cell for low and the `medium` cell for medium. At `high`, `xhigh`, or `max`, use the barriered parallel path when the current agent can launch independent subagents concurrently and wait for every task in one phase before starting the next. Otherwise review inline with the matching cell below.
 
@@ -88,8 +88,6 @@ Cleanup, altitude, and conventions candidates use the same `file`/`line`/`summar
 For recall-biased verification, use **PLAUSIBLE by default** — do not refute a candidate for being "speculative" or "depends on runtime state" when the state is realistic: concurrency races, nil/undefined on a rare-but-reachable path (error handler, cold cache, missing optional field), falsy-zero treated as missing, off-by-one on a boundary the code does not exclude, retry storms / partial failures, regex/allowlist that lost an anchor. These are PLAUSIBLE.
 
 **REFUTED** only when constructible from the code: factually wrong (quote the actual line); provably impossible (type/constant/invariant — show it); already handled in this diff (cite the guard); or pure style with no observable effect.
-
-Every finder, verifier, scope, sweep, and synthesis subagent must directly inherit the current session's thinking budget; do not assign a separate reasoning or thinking budget.
 
 ## Inline cells
 

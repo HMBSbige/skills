@@ -17,7 +17,7 @@ Run `git diff @{upstream}...HEAD` (or `git diff main...HEAD` / `git diff HEAD~1`
 
 ## Phase 1 — Review (4 cleanup subagents in parallel)
 
-Launch **4 independent review subagents** through the available subagent mechanism, without setting explicit thinking budgets so they inherit the current session's thinking budget, all in a single message so they run concurrently. Pass each subagent the diff and one of the four angles below. Each returns its findings with `file`, `line`, a one-line `summary`, and the concrete cost (what is duplicated, wasted, or harder to maintain).
+Launch **4 independent review subagents** through the available subagent mechanism, all in a single message so they run concurrently. Pass each subagent the diff and one of the four angles below. Each returns its findings with `file`, `line`, a one-line `summary`, and the concrete cost (what is duplicated, wasted, or harder to maintain).
 
 ### Reuse
 
