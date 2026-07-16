@@ -1,6 +1,8 @@
 ---
 name: code-review
-description: Use when reviewing a current diff, branch, change request, ref range, path, or scoped review instructions for correctness bugs and reuse, simplification, efficiency, altitude, or convention issues.
+description: >-
+  Review the current diff for correctness bugs and reuse/simplification/efficiency cleanups at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings).
+  Pass --comment to post findings as inline PR comments, or --fix to apply the findings to the working tree after the review.
 ---
 
 # Code Review

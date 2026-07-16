@@ -1,6 +1,8 @@
 ---
 name: simplify
-description: Use when changed code needs reuse, simplification, efficiency, or altitude cleanup rather than correctness-bug review.
+description: >-
+  Review the changed code for reuse, simplification, efficiency, and altitude cleanups, then apply the fixes.
+  Quality only — it does not hunt for bugs; use /code-review for that.
 ---
 
 `simplify → 4 cleanup subagents in parallel → apply the fixes`
