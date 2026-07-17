@@ -175,6 +175,7 @@ Return findings in this Markdown structure with the selected cap:
 ### 1. <summary>
 
 - Location: `path/to/file.ext:123`
+- Short summary: <claim compressed to ≤60 characters, with no rationale or consequence clause>
 - Category: `<correctness|reuse|simplification|efficiency|altitude|conventions|more-specific-slug>`
 - Verdict: `<CONFIRMED|PLAUSIBLE>`
 - Failure scenario: <concrete inputs/state leading to wrong output, crash, data loss, or cleanup cost>
@@ -440,7 +441,7 @@ Process decisions in return order and stop before the next decision as soon as t
 
 Do not silently drop verified findings while the cap has room. Append omitted findings in ranked, unmerged form. If one is appended, add ` (1 additional verified finding appended unmerged.)` to the summary; for more than one, add ` (<N> additional verified findings appended unmerged.)`. If synthesis is skipped or unusable, use exactly `Synthesis step was skipped or its decisions were unusable — returning verified findings ranked, unmerged.`
 
-Return findings as Markdown in this order: `## Findings`, optional `## Review target`, `## Review summary`, `## Review statistics`, and optional `## Refuted`. Each finding includes location, summary, failure scenario, category, and verdict. Each refuted entry includes location and summary. Statistics contain effort, finders, candidates, verifier agents, verified, refuted, and, when findings are reported, reported.
+Return findings as Markdown in this order: `## Findings`, optional `## Review target`, `## Review summary`, `## Review statistics`, and optional `## Refuted`. Each finding includes location, summary, short summary — the claim compressed to ≤60 characters, no rationale or consequence clause — failure scenario, category, and verdict. Each refuted entry includes location and summary. Statistics contain effort, finders, candidates, verifier agents, verified, refuted, and, when findings are reported, reported.
 
 Present the findings ranked most-severe first, or note that nothing survived verification.
 
