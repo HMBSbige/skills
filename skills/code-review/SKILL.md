@@ -1,8 +1,7 @@
 ---
 name: code-review
 description: >-
-  Review the current diff for correctness bugs and reuse/simplification/efficiency cleanups at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings).
-  Pass --comment to post findings as inline PR comments, or --fix to apply the findings to the working tree after the review.
+  Review the current diff for correctness bugs and reuse/simplification/efficiency cleanups at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings). Pass --comment to post findings as inline PR comments, or --fix to apply the findings to the working tree after the review.
 ---
 
 # Code Review
@@ -19,7 +18,7 @@ If the first remaining word consists only of letters, begins with `low`, `med`, 
 
 Then keep the complete remaining text as the target and use the current session's effort level. With no explicit level, use the current session's effort; if it is unavailable, use `medium`.
 
-Use the `low` cell for low and the `medium` cell for medium. At `high`, `xhigh`, or `max`, use the barriered parallel path when the current agent can launch independent subagents concurrently and wait for every task in one phase before starting the next. Otherwise review inline with the matching cell below.
+Use the `low` cell for low and the `medium` cell for medium. At `high`, `xhigh`, or `max`, use the barriered parallel path when the current agent can launch independent subagents concurrently and wait for every task in one phase before starting the next. Otherwise review inline with the matching cell below. Whenever the matching cell requires subagents but no subagent mechanism is available, use the matching no-subagent fallback below.
 
 When a target was supplied, prepend:
 
@@ -164,6 +163,26 @@ Keep candidates where the vote is CONFIRMED or PLAUSIBLE. This is recall mode �
 Run **one more finder** as a fresh subagent who has the verified list. Re-read the diff and enclosing functions looking ONLY for defects not already listed. Do not re-derive or re-confirm anything already there — the job is gaps. Focus on what the first pass tends to miss: moved/extracted code that dropped a guard or anchor; second-tier footguns (dataclass default evaluated once, `hash()` non-determinism, lock-scope shrink, predicate methods with side effects); setup/teardown asymmetry in tests; config defaults flipped.
 
 Surface **up to 8 additional candidates**, each naming a defect not already on the list. If nothing new, return an empty sweep — do not pad.
+
+### No-subagent fallback (medium, high, xhigh, and max)
+
+Use this path only when no subagent mechanism is available. The usual multi-agent fan-out and subagent verify pass cannot run, so work through every selected angle yourself, in the same context, in one pass — do not skip angles for lack of fan-out. Re-check each candidate against the diff before keeping it; drop anything you cannot back up with a concrete failure scenario.
+
+- At `medium`, use correctness angles A-C and all five cleanup angles, cap the report at 8 findings, and use the medium precision standard.
+- At `high`, use correctness angles A-C and all five cleanup angles, cap the report at 10 findings, and use the high recall standard.
+- At `xhigh` or `max`, use correctness angles A-E and all five cleanup angles, cap the report at 15 findings, and use the matching recall standard.
+
+## Phase 1 — Find candidates (single pass)
+
+Work through the selected angles yourself, in sequence, in the same context. Each angle surfaces candidate findings with `file`, `line`, a one-line `summary`, and a concrete `failure_scenario`. Apply the cleanup, altitude, and conventions candidate rules above.
+
+## Phase 2 — Dedup and self-check (no subagent verify)
+
+Dedup near-duplicates (same defect, same location, same reason → keep one). Re-check each remaining candidate yourself against the diff before keeping it.
+
+At `xhigh` and `max`, take one more pass yourself in the same context as a fresh reviewer who has the deduplicated list. Re-read the diff and enclosing functions looking only for defects not already listed: moved/extracted code that dropped a guard or anchor; second-tier footguns (dataclass default evaluated once, `hash()` non-determinism, lock-scope shrink, predicate methods with side effects); setup/teardown asymmetry in tests; config defaults flipped.
+
+State clearly in the review summary that this was a single-pass review done without the subagent mechanism, not the full multi-agent fan-out, so the reader is not misled about what actually ran.
 
 ## Inline output
 

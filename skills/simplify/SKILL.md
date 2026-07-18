@@ -1,11 +1,10 @@
 ---
 name: simplify
 description: >-
-  Review the changed code for reuse, simplification, efficiency, and altitude cleanups, then apply the fixes.
-  Quality only — it does not hunt for bugs; use /code-review for that.
+  Review the changed code for reuse, simplification, efficiency, and altitude cleanups, then apply the fixes. Quality only — it does not hunt for bugs; use code-review for that.
 ---
 
-`simplify → 4 cleanup subagents in parallel → apply the fixes`
+`simplify → 4 cleanup subagents in parallel when available → apply the fixes`
 
 When a target was supplied, prepend:
 
@@ -17,9 +16,11 @@ You are improving the quality of the changed code, not hunting for bugs. Review 
 
 Run `git diff @{upstream}...HEAD` (or `git diff main...HEAD` / `git diff HEAD~1` if there's no upstream) to get the unified diff under review. If there are uncommitted changes, or the range diff is empty, also run `git diff HEAD` and include the working-tree changes in scope — the review often runs before the commit. If a PR number, branch name, or file path was passed as an argument, review that target instead. Treat this diff as the review scope.
 
-## Phase 1 — Review (4 cleanup subagents in parallel)
+## Phase 1 — Review
 
-Launch **4 independent review subagents** through the available subagent mechanism, all in a single message so they run concurrently. Pass each subagent the diff and one of the four angles below. Each returns its findings with `file`, `line`, a one-line `summary`, and the concrete cost (what is duplicated, wasted, or harder to maintain).
+When the current agent can launch independent subagents, launch **4 independent review subagents** through the available subagent mechanism, all in a single message so they run concurrently. Pass each subagent the diff and one of the four angles below. Each returns its findings with `file`, `line`, a one-line `summary`, and the concrete cost (what is duplicated, wasted, or harder to maintain).
+
+When no subagent mechanism is available, use a single-pass inline cleanup: work through all four angles below yourself, in the same context, in one pass — do not skip an angle for lack of fan-out. Record findings with the same fields and concrete-cost requirement.
 
 ### Reuse
 
@@ -39,4 +40,4 @@ Check that each change is implemented at the right depth, not as a fragile banda
 
 ## Phase 2 — Apply the fixes
 
-Wait for all four subagents to complete, dedup findings that point at the same line or mechanism, and fix each remaining one directly. Skip any finding whose fix would change intended behavior, require changes well outside the reviewed diff, or that you judge to be a false positive — note the skip rather than arguing with it. Finish with a brief summary of what was fixed and what was skipped (or confirm the code was already clean).
+Wait for all four subagents to complete, or finish the single inline pass when no subagent mechanism is available. Dedup findings that point at the same line or mechanism, and fix each remaining one directly. Skip any finding whose fix would change intended behavior, require changes well outside the reviewed diff, or that you judge to be a false positive — note the skip rather than arguing with it. Finish with a brief summary of what was fixed and what was skipped (or confirm the code was already clean). For the inline fallback, state clearly that this was a single-pass review done without the full 4-subagent fan-out.
