@@ -484,4 +484,4 @@ Finish with:
 
 ## If findings are fixed later
 
-If you apply any of the reported findings later in this session (the user asks you to fix them, or they get fixed as part of subsequent work), use the same `## Fix outcomes` Markdown section with `fixed`, `no_change_needed`, or `skipped` for each finding.
+Whenever reported findings get fixed later in this session — the user asks you to fix them, or later work fixes them incidentally — you MUST use the same `## Fix outcomes` Markdown section with `fixed`, `no_change_needed`, or `skipped` for each finding. Emit it immediately after the fixes land, before any prose summary.
