@@ -114,7 +114,7 @@ Output at most **4 findings**, most-severe first, one line each: `path/to/file.e
 
 You are reviewing for **precision** at medium effort: every finding you surface should be one a maintainer would act on.
 
-Run **8 independent finder angles** via the available subagent mechanism. Each surfaces **up to 6 candidate findings** with `file`, `line`, a one-line `summary`, and a concrete `failure_scenario`.
+Run **8 independent finder angles** via the available subagent mechanism. Each surfaces **up to 6 candidate findings** with `file`, `line`, a one-line `summary`, and a concrete `failure_scenario`. If the subagent mechanism is not available in your current tool set, do not error — perform each angle (and each verification) yourself, sequentially, in this context.
 
 Use correctness angles A-C and all five cleanup angles. Pass every candidate with a nameable failure scenario through — finders that silently drop half-believed candidates bypass the verify step and are the dominant cause of misses.
 
@@ -128,7 +128,7 @@ Keep candidates where the vote is CONFIRMED or PLAUSIBLE.
 
 You are reviewing for **recall** at high effort: catch every real bug a careful reviewer would catch in one sitting. At this level, catching real bugs matters more than avoiding false positives. Err on the side of surfacing.
 
-Run **8 independent finder angles** via the available subagent mechanism. Each surfaces **up to 6 candidate findings** with `file`, `line`, a one-line `summary`, and a concrete `failure_scenario`.
+Run **8 independent finder angles** via the available subagent mechanism. Each surfaces **up to 6 candidate findings** with `file`, `line`, a one-line `summary`, and a concrete `failure_scenario`. If the subagent mechanism is not available in your current tool set, do not error — perform each angle (and each verification) yourself, sequentially, in this context.
 
 Use correctness angles A-C and all five cleanup angles. Pass every candidate with a nameable failure scenario through — finders that silently drop half-believed candidates bypass the verify step and are the dominant cause of misses.
 
@@ -150,7 +150,7 @@ You are reviewing for **recall** at maximum effort: catch every real bug. At thi
 
 ### Shared xhigh/max phases
 
-Run **10 independent finder angles** via the available subagent mechanism. Each surfaces **up to 8 candidate findings**. Do NOT let one angle's conclusions suppress another's — if two angles flag the same line for different reasons, record both.
+Run **10 independent finder angles** via the available subagent mechanism. Each surfaces **up to 8 candidate findings**. Do NOT let one angle's conclusions suppress another's — if two angles flag the same line for different reasons, record both. If the subagent mechanism is not available in your current tool set, do not error — perform each angle (and each verification) yourself, sequentially, in this context.
 
 Use correctness angles A-E and all five cleanup angles. Pass every candidate with a nameable failure scenario through — finders that silently drop half-believed candidates bypass the verify step and are the dominant cause of misses.
 
