@@ -10,6 +10,8 @@ Match each material completion claim to the smallest sufficient evidence from th
 ## Verify the claims
 
 1. List the claims the final report will make: original symptom fixed, focused tests passing, build valid, requirements met, artifact rendered correctly, or another concrete outcome.
+   - For a requirements-met claim, re-read the authoritative request, plan, and acceptance criteria against the current diff or artifact. Passing tests alone do not prove coverage.
+   - For a regression-protection claim, demonstrate that the test fails on the unfixed behavior or on a targeted mutation or revert when practical and safe. A green run alone proves only compatibility with the current implementation.
 2. Identify the evidence that proves each claim and what changes would invalidate it. Evidence remains current only when relevant code, configuration, dependencies, environment, or generated inputs have not changed since it was collected.
 3. Run the appropriate checks:
    - For routine local changes, run the focused reproduction or test plus the relevant module checks.

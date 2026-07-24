@@ -1,6 +1,6 @@
 ---
 name: testing-strategy
-description: Use when a code change needs a testing approach chosen or revised, especially for bug fixes lacking regression coverage, stable APIs suited to test-first work, legacy code needing characterization, prototypes or UI/configuration/integration work needing acceptance-style validation, or repositories with explicit strict TDD rules. Choose from contract stability, available test seams, and risk; for strategy-only requests, recommend evidence without implementing changes; skip trivial edits whose required checks are already obvious.
+description: Use when a code change needs a testing approach chosen or revised, or when writing or changing nontrivial tests whose falsifiability, boundary, doubles, or regression value needs review, especially for bug fixes lacking regression coverage, stable APIs suited to test-first work, legacy code needing characterization, prototypes or UI/configuration/integration work needing acceptance-style validation, or repositories with explicit strict TDD rules. Choose from contract stability, available test seams, and risk; for strategy-only requests, recommend evidence without implementing changes; skip trivial edits whose required checks are already obvious.
 ---
 
 # Testing Strategy
@@ -29,7 +29,10 @@ When implementation already exists in a dirty worktree, preserve it and apply th
 
 ## Keep tests useful
 
+- Before retaining a test, name a realistic production defect it would catch. If none can be named, redesign or remove it. For high-risk behavior, confirm falsifiability with a pre-fix run, targeted revert, or mutation that fails for the intended reason when practical.
 - Test externally observable behavior at stable boundaries; do not impose one test per method.
+- Test behavior, not source presence or change alone. Exact text is a valid assertion only when it is part of the external contract; otherwise execute the script, configuration, generated artifact, or agent-facing instruction and assert outputs, side effects, schema, exit status, or consumer behavior. Do not assert constants or private structure merely to detect edits.
+- Test this code's boundary contract, not the framework's mechanics. Characterize an upstream assumption only when the implementation materially depends on it.
 - Use real collaborators when inexpensive and deterministic. Use narrow doubles at slow, nondeterministic, destructive, or external boundaries.
 - Avoid assertions that only prove mock choreography or private implementation details.
 - Reuse existing test frameworks and seams. Do not add a new framework, harness, public API, or dependency-injection layer solely to test one change unless recurring risk justifies its maintenance.
