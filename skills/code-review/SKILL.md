@@ -10,21 +10,11 @@ description: >-
 
 ## Arguments and routing
 
-Remove exact `--comment` and `--fix` flags wherever they occur. Trim and lowercase the first remaining word. Accept `low`, `medium`, `high`, `xhigh`, and `max`; map `med` to `medium`. If the first remaining word is a recognized level, remove it and use the rest as the target. Otherwise keep the complete remaining text as the target.
+Remove standalone `--comment` and `--fix` flags wherever they appear and record the requested actions. Then match the first remaining word case-insensitively against `low`, `medium` (`med`), `high`, `xhigh`, or `max`. On a match, use that level and the rest as the target. Otherwise keep all remaining text as the target and use the agent's current supported level, falling back to `medium`.
 
-If the first remaining word consists only of letters, begins with `low`, `med`, `hig`, `xhi`, or `max`, and is not a recognized level, print:
+If an unmatched first word is alphabetic and starts with `low`, `med`, `hig`, `xhi`, or `max`, print `(Ignoring unrecognized effort "<word>"; valid: low, medium, high, xhigh, max. Using <level>.)`. Route `low` and `medium` to their matching inline cells. Route `high`, `xhigh`, and `max` to `Barriered parallel high, xhigh, and max` when the agent supports parallel subagents and phase barriers; otherwise use the matching inline cell and its no-subagent fallback.
 
-`(Ignoring unrecognized effort "<word>"; valid: low, medium, high, xhigh, max.)`
-
-Then keep the complete remaining text as the target and use the current session's effort level. With no explicit level, use the current session's effort; if it is unavailable, use `medium`.
-
-Use the `low` cell for low and the `medium` cell for medium. At `high`, `xhigh`, or `max`, use the barriered parallel path when the current agent can launch independent subagents concurrently and wait for every task in one phase before starting the next. Otherwise review inline with the matching cell below. Whenever the matching cell requires subagents but no subagent mechanism is available, use the matching no-subagent fallback below.
-
-When a target was supplied, prepend:
-
-`Review target: `<target>``
-
-Everything after the level is the review target or instructions. Additional scope restrictions, files to focus on, and things to skip elsewhere in the conversation are part of the target.
+An agent-selected internal `minimal` mode overrides the parsed level and uses `Minimal`; do not expose it as an argument or infer it from a product or model name. Pass a non-empty target verbatim as `Review target: <target>`, including any scope restrictions, focus files, or exclusions stated elsewhere in the conversation.
 
 ## Shared review scope
 
@@ -91,6 +81,16 @@ For recall-biased verification, use **PLAUSIBLE by default** — do not refute a
 **REFUTED** only when constructible from the code: factually wrong (quote the actual line); provably impossible (type/constant/invariant — show it); already handled in this diff (cite the guard); or pure style with no observable effect.
 
 ## Inline cells
+
+### Minimal
+
+`minimal prompt → single careful diff pass → ≤15 findings`
+
+Gather the diff exactly as Phase 0 describes.
+
+Review every hunk as a careful senior engineer. Open surrounding files for context as needed using available file-reading and search capabilities plus `git log`, `git blame`, and `git show`. Hunt for correctness issues — wrong or inverted conditions, off-by-one errors, null/undefined dereferences, missing `await`, dropped error handling, removed guards or validations, broken callers of changed functions, and races. Prefer real failure modes over style; every finding needs a concrete scenario in which the code misbehaves.
+
+Return at most 15 findings, most-severe first, as Markdown once. Under `## Findings`, write one bullet per finding as ``- `path/to/file.ext:123` — **<severity>** — <issue and concrete failure scenario>``. If nothing qualifies, return `## Findings` followed by `(none)`.
 
 ### Low
 
