@@ -1,20 +1,24 @@
 ---
 name: code-review
 description: >-
-  Review the current diff for correctness bugs and reuse/simplification/efficiency cleanups at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings). Pass --comment to post findings as inline PR comments, or --fix to apply the findings to the working tree after the review.
+  Review the current diff, or a PR number/branch/path target, for correctness bugs and reuse/simplification/efficiency cleanups at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings). With no level given, reuse the level explicitly selected most recently in the conversation; if none was selected, use the agent's current effort level, falling back to medium. Pass --comment to post findings as inline PR comments, or --fix to apply the findings to the working tree after the review.
 ---
 
 # Code Review
 
-`code-review [low|medium|high|xhigh|max] [--fix] [--comment] [<target>]`
+`code-review [low|medium|high|xhigh|max] [--fix] [--comment] [<pr#>|<branch>|<path>]`
 
 ## Arguments and routing
 
-Remove standalone `--comment` and `--fix` flags wherever they appear and record the requested actions. Then match the first remaining word case-insensitively against `low`, `medium` (`med`), `high`, `xhigh`, or `max`. On a match, use that level and the rest as the target. Otherwise keep all remaining text as the target and use the agent's current supported level, falling back to `medium`.
+Remove standalone `--comment` and `--fix` flags wherever they appear and record the requested actions. Then match the first remaining word case-insensitively against `low`, `medium` (`med`), `high`, `xhigh`, or `max`. On a match, use that level, remember it as the most recently explicitly selected level in the conversation, and use the rest as the target. Otherwise keep all remaining text as the target and reuse the most recently explicitly selected level in the conversation; if none was selected, use the agent's current effort level, falling back to `medium`.
 
 If an unmatched first word is alphabetic and starts with `low`, `med`, `hig`, `xhi`, or `max`, print `(Ignoring unrecognized effort "<word>"; valid: low, medium, high, xhigh, max. Using <level>.)`. Route `low` and `medium` to their matching inline cells. Route `high`, `xhigh`, and `max` to `Barriered parallel high, xhigh, and max` when the agent supports parallel subagents and phase barriers; otherwise use the matching inline cell and its no-subagent fallback.
 
-An agent-selected internal `minimal` mode overrides the parsed level and uses `Minimal`; do not expose it as an argument or infer it from a product or model name. Pass a non-empty target verbatim as `Review target: <target>`, including any scope restrictions, focus files, or exclusions stated elsewhere in the conversation.
+When no explicit level was given and a previously selected level is reused, tell the user in one short line as the review begins: `No effort level given — reusing <level>, the level you selected last time. Select a level like code-review high to change it.` If an effort-like word was unrecognized and a previously selected level is being reused, combine the warning, the reuse source, and how to change it into that one line. When no previously selected level exists and the agent fallback is used, do not print this notice. If the review runs in a fork or background task, put the notice at the start of the report instead.
+
+An agent-selected internal `minimal` mode overrides the parsed level and uses `Minimal`; do not expose it as an argument or infer it from a product or model name.
+
+For a non-empty target, remove all backticks and one leading `#` from its first word, rejoin it with the remaining words, and pass it as ``Review target: `<target>` ``. Include any scope restrictions, focus files, or exclusions stated elsewhere in the conversation.
 
 ## Shared review scope
 
@@ -186,21 +190,20 @@ State clearly in the review summary that this was a single-pass review done with
 
 ## Inline output
 
-Return findings in this Markdown structure with the selected cap:
+For `medium`, `high`, `xhigh`, and `max`, return findings as a JSON array of at most the selected cap of objects:
 
-```markdown
-## Findings
-
-### 1. <summary>
-
-- Location: `path/to/file.ext:123`
-- Short summary: <claim compressed to ≤60 characters, with no rationale or consequence clause>
-- Category: `<correctness|reuse|simplification|efficiency|altitude|conventions|more-specific-slug>`
-- Verdict: `<CONFIRMED|PLAUSIBLE>`
-- Failure scenario: <concrete inputs/state leading to wrong output, crash, data loss, or cleanup cost>
+```json
+[
+  {
+    "file": "path/to/file.ext",
+    "line": 123,
+    "summary": "one-sentence statement of the bug",
+    "failure_scenario": "concrete inputs/state → wrong output/crash"
+  }
+]
 ```
 
-Rank findings most-severe first. If more than the selected cap survive, keep the most severe. If nothing survives verification, return `## Findings` followed by `(none)`. Include `Verdict` only when a verify pass produced one; sweep findings appended without another verify pass omit it.
+Rank findings most-severe first. The selected caps are 8 for `medium`, 10 for `high`, and 15 for `xhigh` or `max`. If more survive, keep the most severe. If nothing survives verification, return `[]`. Do not use a separate host-specific findings-reporting tool even if one is available — this review's output contract is the JSON block above.
 
 ## Barriered parallel high, xhigh, and max
 
@@ -460,7 +463,7 @@ Process decisions in return order and stop before the next decision as soon as t
 
 Do not silently drop verified findings while the cap has room. Append omitted findings in ranked, unmerged form. If one is appended, add ` (1 additional verified finding appended unmerged.)` to the summary; for more than one, add ` (<N> additional verified findings appended unmerged.)`. If synthesis is skipped or unusable, use exactly `Synthesis step was skipped or its decisions were unusable — returning verified findings ranked, unmerged.`
 
-Return findings as Markdown in this order: `## Findings`, optional `## Review target`, `## Review summary`, `## Review statistics`, and optional `## Refuted`. Each finding includes location, summary, short summary — the claim compressed to ≤60 characters, no rationale or consequence clause — failure scenario, category, and verdict. Each refuted entry includes location and summary. Statistics contain effort, finders, candidates, verifier agents, verified, refuted, and, when findings are reported, reported.
+Return findings as Markdown in this order: `## Findings`, optional `## Review target`, `## Review summary`, `## Review statistics`, and optional `## Refuted`. Each finding includes location, summary, failure scenario, category, and verdict. Each refuted entry includes location and summary. Statistics contain effort, finders, candidates, verifier agents, verified, refuted, and, when findings are reported, reported.
 
 Present the findings ranked most-severe first, or note that nothing survived verification.
 
@@ -470,18 +473,4 @@ The `--comment` flag was passed. After producing the findings list, if the revie
 
 ## Applying fixes (--fix)
 
-The `--fix` flag was passed. After producing the findings list, apply the findings to the working tree instead of stopping at the report: fix each one directly — correctness bugs and reuse/simplification/efficiency cleanups alike. Skip any finding whose fix would change intended behavior, require changes well outside the reviewed diff, or that you judge to be a false positive — note the skip rather than arguing with it.
-
-Finish with:
-
-```markdown
-## Fix outcomes
-
-- `<file[:line]>` - `fixed`
-- `<file[:line]>` - `no_change_needed`: <finding was wrong or already handled>
-- `<file[:line]>` - `skipped`: <real finding was not applied and why>
-```
-
-## If findings are fixed later
-
-Whenever reported findings get fixed later in this session — the user asks you to fix them, or later work fixes them incidentally — you MUST use the same `## Fix outcomes` Markdown section with `fixed`, `no_change_needed`, or `skipped` for each finding. Emit it immediately after the fixes land, before any prose summary.
+The `--fix` flag was passed. After producing the findings list, apply the findings to the working tree instead of stopping at the report: fix each one directly — correctness bugs and reuse/simplification/efficiency cleanups alike. Skip any finding whose fix would change intended behavior, require changes well outside the reviewed diff, or that you judge to be a false positive — note the skip rather than arguing with it. Finish with a brief summary of what was fixed and what was skipped.
