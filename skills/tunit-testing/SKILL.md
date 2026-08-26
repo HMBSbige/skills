@@ -56,6 +56,7 @@ dotnet test --project path/to/TestProject.csproj --diagnostic --minimum-expected
 ## 编写测试
 
 - `await` 每个 TUnit 断言；未等待的断言不会执行。
+- 编写或修改断言时，优先使用语义最贴切的 TUnit 原生断言。
 - 保持测试独立；TUnit 为每个测试创建新的类实例，实例字段不会跨测试共享。
 - 仅在必须排序时使用 `[DependsOn]`；依赖过多时合并测试或改用 setup/teardown。
 - 使用 `[ClassDataSource<>]` 的 `Shared` 选项共享昂贵资源，并用 `IAsyncInitializer` 和 `IAsyncDisposable` 管理生命周期。
