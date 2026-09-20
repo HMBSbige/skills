@@ -3,5 +3,5 @@
 ## 安装
 
 ```sh
-gh skill install HMBSbige/skills --agent codex --scope user
+gh skill install HMBSbige/skills
 ```
