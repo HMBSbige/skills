@@ -1,24 +1,20 @@
 ---
 name: code-review
 description: >-
-  Review the current diff, or a PR number/branch/path target, for correctness bugs and reuse/simplification/efficiency cleanups at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings). With no level given, reuse the level explicitly selected most recently in the conversation; if none was selected, use the agent's current effort level, falling back to medium. Pass --comment to post findings as inline PR comments, or --fix to apply the findings to the working tree after the review.
+  Review the current diff, or a PR number/branch/path target, for correctness bugs (plus reuse/simplification/efficiency cleanups where the model's review recipe covers them) at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings); with no level given, it reuses the level you typed last. Pass --fix to apply the findings to the working tree after the review. Pass --max-findings <n> to report up to n findings, or --max-findings all for every finding. The choice stays until you pass --max-findings default.
 ---
 
 # Code Review
 
-`code-review [low|medium|high|xhigh|max] [--fix] [--comment] [<pr#>|<branch>|<path>]`
+`code-review [low|medium|high|xhigh|max] [--fix] [<pr#>|<branch>|<path>] [--max-findings <n>|all]`
 
 ## Arguments and routing
 
-Remove standalone `--comment` and `--fix` flags wherever they appear and record the requested actions. Then match the first remaining word case-insensitively against `low`, `medium` (`med`), `high`, `xhigh`, or `max`. On a match, use that level, remember it as the most recently explicitly selected level in the conversation, and use the rest as the target. Otherwise keep all remaining text as the target and reuse the most recently explicitly selected level in the conversation; if none was selected, use the agent's current effort level, falling back to `medium`.
+Use the requested effort level (`med` means `medium`). If omitted, reuse the last explicitly selected level in this conversation; otherwise use the current session effort, falling back to `medium` when unavailable or `high` when unsupported. Review the supplied target, or the current diff if none is given. Use the matching review section and its no-subagent fallback when needed.
 
-If an unmatched first word is alphabetic and starts with `low`, `med`, `hig`, `xhi`, or `max`, print `(Ignoring unrecognized effort "<word>"; valid: low, medium, high, xhigh, max. Using <level>.)`. Route every recognized level to its matching inline cell, using its no-subagent fallback when the agent has no subagent mechanism.
+`--max-findings N` overrides the report limit; `all` removes it. Remember this choice for subsequent reviews; `default` restores the selected level's default. Ignore invalid values. This affects only the report limit, not candidate budgets or verification.
 
-When no explicit level was given and a previously selected level is reused, tell the user in one short line as the review begins: `No effort level given — reusing <level>, the level you selected last time. Select a level like code-review high to change it.` If an effort-like word was unrecognized and a previously selected level is being reused, combine the warning, the reuse source, and how to change it into that one line. When no previously selected level exists and the agent fallback is used, do not print this notice. If the review runs in a fork or background task, put the notice at the start of the report instead.
-
-An agent-selected internal `minimal` mode overrides the parsed level and uses `Minimal`; do not expose it as an argument or infer it from a product or model name.
-
-For a non-empty target, remove all backticks and one leading `#` from its first word, rejoin it with the remaining words, and pass it as ``Review target: `<target>` ``. Include any scope restrictions, focus files, or exclusions stated elsewhere in the conversation.
+Apply the findings to the working tree only when `--fix` is passed.
 
 ## Shared review scope
 
@@ -64,7 +60,7 @@ Flag wasted work the diff introduces: redundant computation or repeated I/O, ind
 
 ### Altitude
 
-Check that each change is implemented at the right depth, not as a fragile bandaid. Special cases layered on shared infrastructure are a sign the fix isn't deep enough — prefer generalizing the underlying mechanism over adding special cases.
+Check that each change fixes the root cause at the right depth rather than patching a symptom with a fragile bandaid. Special cases layered on shared infrastructure are a sign the fix isn't deep enough — prefer the simpler, more general change to the underlying mechanism over adding special cases, and name that change.
 
 ### Conventions (agent instructions)
 
@@ -164,7 +160,7 @@ Keep candidates where the vote is CONFIRMED or PLAUSIBLE. This is recall mode �
 
 ## Phase 3 — Sweep for gaps
 
-Run **one more finder** as a fresh subagent who has the verified list. Re-read the diff and enclosing functions looking ONLY for defects not already listed. Do not re-derive or re-confirm anything already there — the job is gaps. Focus on what the first pass tends to miss: moved/extracted code that dropped a guard or anchor; second-tier footguns (dataclass default evaluated once, `hash()` non-determinism, lock-scope shrink, predicate methods with side effects); setup/teardown asymmetry in tests; config defaults flipped.
+Run **one more finder** as a fresh reviewer who has the verified list. Re-read the diff and enclosing functions looking ONLY for defects not already listed. Do not re-derive or re-confirm anything already there — the job is gaps. Focus on what the first pass tends to miss: moved/extracted code that dropped a guard or anchor; second-tier footguns (dataclass default evaluated once, `hash()` non-determinism, lock-scope shrink, predicate methods with side effects); setup/teardown asymmetry in tests; config defaults flipped.
 
 Surface **up to 8 additional candidates**, each naming a defect not already on the list. If nothing new, return an empty sweep — do not pad.
 
@@ -204,10 +200,6 @@ For `medium`, `high`, `xhigh`, and `max`, return findings as a JSON array of at 
 ```
 
 Rank findings most-severe first. The selected caps are 8 for `medium`, 10 for `high`, and 15 for `xhigh` or `max`. If more survive, keep the most severe. If nothing survives verification, return `[]`. Do not use a separate host-specific findings-reporting tool even if one is available — this review's output contract is the JSON block above.
-
-## Posting to GitHub (--comment)
-
-The `--comment` flag was passed. After producing the findings list, if the review target is a GitHub PR, post each finding as an inline PR comment via an available source-control integration, CLI, or API (one call per finding; include a suggestion block only when it fully fixes the issue). If posting is not available in this session, print the findings instead. If the target is not a PR, print the findings and note that `--comment` was ignored.
 
 ## Applying fixes (--fix)
 
