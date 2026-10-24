@@ -28,7 +28,7 @@ try {
     $writeError = $null
     try {
         $normalizedScript = $Script.Replace("`r`n", "`n").Replace("`r", "`n")
-        $process.StandardInput.Write($normalizedScript)
+        $process.StandardInput.Write("{ :`n$normalizedScript`n} </dev/null`n")
     }
     catch {
         $writeError = $_
